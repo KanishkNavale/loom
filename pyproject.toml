@@ -1,0 +1,25 @@
+[project]
+name = "assortments"
+version = "0.1.0"
+description = "A collection of frequently used AI & Robotics modules"
+readme = "README.md"
+requires-python = ">=3.14"
+authors = [{ name = "Kanishk Navale", email = "navalekanishk@gmail.com" }]
+
+dependencies = [
+    "duckdb>=1.4.4",
+    "numpy>=2.4.2",
+    "pydantic>=2.12.5",
+    "pytorch-lightning>=2.6.1",
+    "torch>=2.10.0",
+]
+
+[dependency-groups]
+dev = ["cython>=3.2.4", "isort>=7.0.0", "ruff>=0.15.1", "ty>=0.0.17"]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build]
+include = ["src"]
