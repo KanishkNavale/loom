@@ -1,6 +1,6 @@
 import logging
-from pathlib import Path
 from logging.handlers import RotatingFileHandler
+from pathlib import Path
 
 import colorlog
 
@@ -13,7 +13,12 @@ class OneLineFormatter(logging.Formatter):
 
 
 class CustomLogger(logging.Logger):
-    def __init__(self, name: str = "custom_logger", log_file: str = "clog.log", max_file_size: int = 10) -> None:
+    def __init__(
+        self,
+        name: str = "custom_logger",
+        log_file: str = "clog.log",
+        max_file_size: int = 10,
+    ) -> None:
         super().__init__(name)
         self.log_filename = log_file
         self.max_file_size = max_file_size
@@ -53,21 +58,18 @@ class CustomLogger(logging.Logger):
         file_handler = RotatingFileHandler(
             filename=Path.joinpath(folder, self.log_filename),
             maxBytes=self.max_file_size * 1024 * 1024,
-            backupCount=5
+            backupCount=5,
         )
         file_handler.setFormatter(file_formatter)
         self.addHandler(file_handler)
 
     @classmethod
-    def get_logger(cls, name:str, **kwargs) -> 'CustomLogger':
+    def get_logger(cls, name: str, **kwargs) -> "CustomLogger":
         logging.setLoggerClass(cls)
         logger = cls(name, **kwargs)
-
-        if not logger.handlers:
-            logger.__init__(name, **kwargs)
 
         return logger
 
     @classmethod
-    def __call__(cls, name:str, **kwargs) -> 'CustomLogger':
+    def __call__(cls, name: str, **kwargs) -> "CustomLogger":
         return cls.get_logger(name, **kwargs)

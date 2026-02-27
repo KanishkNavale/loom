@@ -16,7 +16,13 @@ dependencies = [
 ]
 
 [dependency-groups]
-dev = ["cython>=3.2.4", "isort>=7.0.0", "ruff>=0.15.1", "ty>=0.0.17"]
+dev = [
+    "cython>=3.2.4",
+    "isort>=7.0.0",
+    "ruff>=0.15.1",
+    "ty>=0.0.17",
+    "wheel>=0.46.3",
+]
 
 [build-system]
 requires = ["hatchling"]
@@ -24,3 +30,22 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build]
 include = ["src"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src", "test"]
+
+[tool.uv]
+package = true
+
+[tool.ruff]
+line-length = 80
+target-version = "py312"
+lint.extend-select = ["I", "PLE", "PLW"]
+fix = true
+exclude = ["archive"]
+
+[tool.isort]
+profile = "black"
+force_grid_wrap = 0
+use_parentheses = true
+line_length = 80
