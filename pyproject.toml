@@ -17,6 +17,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "autohooks>=26.2.0",
     "cython>=3.2.4",
     "isort>=7.0.0",
     "ruff>=0.15.1",
