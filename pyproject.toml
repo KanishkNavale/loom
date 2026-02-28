@@ -18,8 +18,12 @@ dependencies = [
 [dependency-groups]
 dev = [
     "autohooks>=26.2.0",
+    "autohooks-plugin-isort>=23.10.0",
+    "autohooks-plugin-pytest>=23.10.0",
+    "autohooks-plugin-ruff>=25.3.1",
     "cython>=3.2.4",
     "isort>=7.0.0",
+    "pytest>=9.0.2",
     "ruff>=0.15.1",
     "ty>=0.0.17",
     "wheel>=0.46.3",
@@ -30,10 +34,18 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build]
-include = ["src"]
+include = ["loom"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src", "test"]
+packages = ["loom", "test"]
+
+[tool.autohooks]
+mode = "uv"
+pre-commit = [
+    "autohooks.plugins.isort",
+    "autohooks.plugins.pytest",
+    "autohooks.plugins.ruff",
+]
 
 [tool.uv]
 package = true
@@ -50,3 +62,7 @@ profile = "black"
 force_grid_wrap = 0
 use_parentheses = true
 line_length = 80
+
+[tool.pytest.ini_options]
+addopts = "--color=yes --durations=10"
+testpaths = ["tests"]
