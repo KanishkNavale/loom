@@ -1,7 +1,7 @@
 .PHONY: install
 install:
 	uv sync
-	autohooks activate --force
+	uv run autohooks activate --force
 
 
 .PHONY: update
@@ -15,4 +15,4 @@ pre-commit: install
 
 .PHONY: tests
 tests: install
-	uv run pytest
+	uv run pytest --cov=loom --cov-report=term-missing
