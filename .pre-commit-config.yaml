@@ -11,7 +11,7 @@ repos:
       - id: detect-private-key
 
   - repo: https://github.com/crate-ci/typos
-    rev: v1.28.4
+    rev: v1
     hooks:
       - id: typos
 
@@ -28,13 +28,15 @@ repos:
         args: [--fix]
       - id: ruff-format
 
-  - repo: https://github.com/allganize/ty-pre-commit
-    rev: v0.0.18
-    hooks:
-      - id: ty
-
   - repo: local
     hooks:
+      - id: ty
+        name: ty
+        entry: uv run ty check
+        language: system
+        types: [python]
+        pass_filenames: false
+
       - id: pytest
         name: pytest
         entry: uv run pytest
