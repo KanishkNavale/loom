@@ -18,12 +18,10 @@ dependencies = [
 [dependency-groups]
 dev = [
     "autohooks>=26.2.0",
-    "autohooks-plugin-isort>=23.10.0",
-    "autohooks-plugin-pytest>=23.10.0",
-    "autohooks-plugin-ruff>=25.3.1",
     "coverage>=7.13.4",
     "cython>=3.2.4",
     "isort>=7.0.0",
+    "pre-commit>=4.0.0",
     "pytest>=9.0.2",
     "pytest-cov>=7.0.0",
     "ruff>=0.15.1",
@@ -40,14 +38,6 @@ include = ["loom"]
 
 [tool.hatch.build.targets.wheel]
 packages = ["loom", "test"]
-
-[tool.autohooks]
-mode = "uv"
-pre-commit = [
-    "autohooks.plugins.isort",
-    "autohooks.plugins.pytest",
-    "autohooks.plugins.ruff",
-]
 
 [tool.uv]
 package = true
