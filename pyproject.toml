@@ -17,7 +17,6 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "autohooks>=26.2.0",
     "coverage>=7.13.4",
     "cython>=3.2.4",
     "isort>=7.0.0",
@@ -64,8 +63,4 @@ branch = true
 source = ["loom"]
 
 [tool.coverage.report]
-fail_under = 0
-
-[tool.autohooks]
-mode = "pythonpath"
-pre-commit = []
+fail_under = 80

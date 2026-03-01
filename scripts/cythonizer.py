@@ -7,7 +7,7 @@ import sysconfig
 import tomllib
 from pathlib import Path
 
-from wheel.wheelfile import WheelFile  # type: ignore[import-untyped]
+from wheel.wheelfile import WheelFile  # type: ignore[import]
 
 TOML_FILE_PATH = "pyproject.toml"
 CPU_COUNT = multiprocessing.cpu_count()

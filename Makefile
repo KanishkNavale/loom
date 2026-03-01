@@ -1,7 +1,7 @@
 .PHONY: install
 install:
 	uv sync
-	uv run autohooks activate --force
+	uv run pre-commit install -f
 
 
 .PHONY: update
@@ -9,9 +9,9 @@ update: install
 	uv sync --upgrade
 	uv run pre-commit autoupdate
 
-.PHONY: pre-commit
-pre-commit: install
-	pre-commit run --all-files
+.PHONY: checks
+checks: install
+	uv run pre-commit run --all-files
 
 .PHONY: tests
 tests: install

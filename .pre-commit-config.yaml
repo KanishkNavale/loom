@@ -10,26 +10,22 @@ repos:
       - id: check-merge-conflict
       - id: detect-private-key
 
-  - repo: https://github.com/crate-ci/typos
-    rev: v1
-    hooks:
-      - id: typos
-
-  - repo: https://github.com/pycqa/isort
-    rev: 8.0.1
-    hooks:
-      - id: isort
-        name: isort (python)
-
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.4
-    hooks:
-      - id: ruff
-        args: [--fix]
-      - id: ruff-format
-
   - repo: local
     hooks:
+      - id: isort
+        name: isort
+        entry: uv run isort .
+        language: system
+        types: [python]
+        pass_filenames: false
+
+      - id: ruff
+        name: ruff
+        entry: uv run ruff check . --fix
+        language: system
+        types: [python]
+        pass_filenames: false
+
       - id: ty
         name: ty
         entry: uv run ty check
