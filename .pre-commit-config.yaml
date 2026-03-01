@@ -8,6 +8,12 @@ repos:
       - id: check-added-large-files
       - id: check-toml
       - id: check-merge-conflict
+      - id: detect-private-key
+
+  - repo: https://github.com/crate-ci/typos
+    rev: v1.28.4
+    hooks:
+      - id: typos
 
   - repo: https://github.com/pycqa/isort
     rev: 8.0.1
@@ -22,15 +28,13 @@ repos:
         args: [--fix]
       - id: ruff-format
 
-  - repo: local
+  - repo: https://github.com/allganize/ty-pre-commit
+    rev: v0.0.18
     hooks:
       - id: ty
-        name: ty
-        entry: uv run ty
-        language: system
-        types: [python]
-        pass_filenames: false
 
+  - repo: local
+    hooks:
       - id: pytest
         name: pytest
         entry: uv run pytest

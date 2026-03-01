@@ -65,3 +65,7 @@ source = ["loom"]
 
 [tool.coverage.report]
 fail_under = 0
+
+[tool.autohooks]
+mode = "pythonpath"
+pre-commit = []
