@@ -29,6 +29,11 @@ clean:
 	@rm -rf .pytest_cache .coverage
 
 .PHONY: compile
-compile: install
+compile:
 	@rm -rf build dist *.egg-info
 	@uv run --no-dev python scripts/cythonizer.py
+
+.PHONY: container
+container:
+	docker buildx build -t loom:latest .
+	docker image prune -f
