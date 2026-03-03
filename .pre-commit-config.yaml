@@ -26,6 +26,13 @@ repos:
         types: [python]
         pass_filenames: false
 
+      - id: black
+        name: black
+        entry: uv run black .
+        language: system
+        types: [python]
+        pass_filenames: false
+
       - id: ty
         name: ty
         entry: uv run ty check

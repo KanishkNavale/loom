@@ -17,6 +17,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "black>=26.1.0",
     "coverage>=7.13.4",
     "cython>=3.2.4",
     "isort>=7.0.0",
@@ -52,6 +53,22 @@ profile = "black"
 force_grid_wrap = 0
 use_parentheses = true
 line_length = 80
+
+[tool.black]
+line-length = 80
+target-version = ["py314"]
+exclude = '''
+/(
+ \.git
+ | \.venv
+ | \.github
+ | \.vscode
+ | build
+ | dist
+ | docs
+ | archive
+)/
+'''
 
 [tool.pytest.ini_options]
 addopts = "--color=yes --durations=10"
