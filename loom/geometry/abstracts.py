@@ -1,11 +1,11 @@
 import torch
 from kornia.geometry import conversions as transform
-from pydantic import BaseModel
 
+from loom.abstracts import BaseDataClass
 from loom.geometry.validators import is_rotationmatrix
 
 
-class Pose(BaseModel):
+class Pose(BaseDataClass):
     translation: torch.Tensor
     quaternion: torch.Tensor
 
