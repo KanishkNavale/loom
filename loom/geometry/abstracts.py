@@ -1,73 +1,24 @@
 import torch
-from kornia.geometry import conversions as transform
+from kornia.geometry import Quaternion
+from kornia.geometry.liegroup import Se3, So3
 
 from loom.abstracts import BaseDataClass
-from loom.geometry.validators import is_rotationmatrix
 
 
 class Pose(BaseDataClass):
     translation: torch.Tensor
     quaternion: torch.Tensor
 
-    @classmethod
-    def from_translation_and_so3(
-        cls,
-        translation: torch.Tensor,
-        rotation: torch.Tensor,
-    ) -> "Pose":
-        if not is_rotationmatrix(rotation):
-            raise ValueError(
-                "The rotation matrix doesn't suffice the rotational matrix properties"
-            )
-
-        quaternion = transform.rotation_matrix_to_quaternion(
-            rotation.contiguous(),
-        )
-
-        return cls(
-            translation=translation,
-            quaternion=quaternion,
-        )
-
-    @classmethod
-    def from_se3(cls, se3: torch.Tensor) -> "Pose":
-        translation = se3[:3, 3]
-        rotation = se3[:3, :3]
-
-        if not is_rotationmatrix(rotation):
-            raise ValueError(
-                "The rotation matrix doesn't suffice the rotational matrix properties"
-            )
-
-        quaternion = transform.rotation_matrix_to_quaternion(
-            rotation.contiguous(),
-        )
-
-        return cls(
-            translation=translation,
-            quaternion=quaternion,
-        )
+    def __str__(self):
+        return f"P{torch.hstack((self.translation, self.quaternion)).cpu().numpy()}"
 
     @property
-    def so3(self) -> torch.Tensor:
-        so3 = transform.quaternion_to_rotation_matrix(
-            self.quaternion,
-        )
-        return so3.squeeze(dim=0)
+    def SO3(self) -> So3:
+        q = Quaternion(self.quaternion.unsqueeze(dim=0))
+        return So3(q)
 
     @property
-    def se3(self) -> torch.Tensor:
-        rotation_translation = torch.hstack(
-            (
-                self.so3,
-                self.translation[:, None],
-            )
-        )
-
-        padding = torch.as_tensor(
-            [0.0, 0.0, 0.0, 1.0],
-            dtype=rotation_translation.dtype,
-            device=rotation_translation.device,
-        )
-
-        return torch.vstack((rotation_translation, padding))
+    def SE3(self) -> Se3:
+        q = Quaternion(self.quaternion.unsqueeze(dim=0))
+        t = self.translation.unsqueeze(dim=0)
+        return Se3(q, t)
