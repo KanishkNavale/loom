@@ -3,7 +3,8 @@ install:
 	uv run pre-commit install -f
 
 update: install
-	uv sync --upgrade
+	uv lock --upgrade
+	uv sync --all-groups
 	uv run pre-commit autoupdate
 
 checks: install
@@ -15,20 +16,12 @@ tests: install
 lint:
 	skip=pytest uv run pre-commit run
 
-clean:
-	@rm -rf .venv
-	@rm -rf build dist *.egg-info
-	@rm -rf logs
-	@find loom -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
-	@find loom -type f -name "*.pyc" -delete
-	@find loom -type f -name "*.pyo" -delete
-	@find loom -type f -name "*.so" -delete
-	@find loom -type f -name "*.c" -delete
-	@rm -rf .pytest_cache .coverage
+prune:
+	git fetch -p && for branch in $$(git branch -vv | grep ': gone]' | awk '{print $$1}'); do git branch -D $$branch; done
 
 compile:
 	@rm -rf build dist *.egg-info
-	@uv run --no-dev python scripts/cythonizer.py
+	@uv run --no-dev python cythonize_package.py
 
 container:
 	docker buildx build -t loom:latest .

@@ -43,8 +43,14 @@ def quantize_model(
     if quantization not in ALLOWED_QUANTS.keys():
         raise ValueError("Please choose a proper quant. setting.")
 
-    model, tokenizer = FastLanguageModel.from_pretrained(adapter_path)
-    model.save_pretrained_merged(output_path, tokenizer, quantization)
+    model, tokenizer = FastLanguageModel.from_pretrained(
+        adapter_path.as_posix()
+    )
+    model.save_pretained_gguf(
+        output_path.as_posix(),
+        tokenizer,
+        quantization,
+    )
 
 
 def main(args: argparse.Namespace) -> None:

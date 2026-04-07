@@ -7,24 +7,22 @@ import sysconfig
 import tomllib
 from pathlib import Path
 
-from wheel.wheelfile import WheelFile  # type: ignore[import]
-
-from loom.logger import LoomLogger
+from wheel.wheelfile import WheelFile
 
 TOML_FILE_PATH = "pyproject.toml"
 CPU_COUNT = multiprocessing.cpu_count()
 DIST_DIR = Path("dist")
 EXCLUDED_FILES = {"__init__.py", "__version__.py"}
 
-logger = LoomLogger("cythonizer")
-
 
 def read_toml() -> dict:
     with open(TOML_FILE_PATH, "rb") as f:
         data = tomllib.load(f)
-    if "project" in data:
-        return data["project"]
-    raise ValueError("Missing [project] section in pyproject.toml")
+
+    if "project" not in data:
+        raise ValueError("Missing [project] section in pyproject.toml")
+
+    return data
 
 
 def collect_py_files(package_dir: str) -> list[Path]:
@@ -37,7 +35,7 @@ def collect_py_files(package_dir: str) -> list[Path]:
 
 
 def cythonize_to_c(py_files: list[Path]) -> list[Path]:
-    logger.info("Cythonizing .py -> .c ...")
+    print("Cythonizing .py -> .c ...")
     base_args = [
         "cython",
         "--fast-fail",
@@ -59,6 +57,7 @@ def cythonize_to_c(py_files: list[Path]) -> list[Path]:
         "--directive",
         "profile=False",
     ]
+
     c_files = []
     for py_file in py_files:
         c_file = py_file.with_suffix(".c")
@@ -66,6 +65,7 @@ def cythonize_to_c(py_files: list[Path]) -> list[Path]:
             [*base_args, str(py_file), "-o", str(c_file)], check=True
         )
         c_files.append(c_file)
+
     return c_files
 
 
@@ -76,7 +76,7 @@ def compile_one(args: tuple[Path, Path, list[str]]) -> Path:
 
 
 def compile_extensions(c_files: list[Path]) -> list[Path]:
-    logger.info("Compiling .c -> .so ...")
+    print("Compiling .c -> .so ...")
     ext_suffix = sysconfig.get_config_var("EXT_SUFFIX")
     include_dirs = sysconfig.get_path("include")
     compile_flags = (sysconfig.get_config_var("CFLAGS") or "").split()
@@ -110,8 +110,10 @@ def get_python_tag() -> str:
 def get_abi_tag() -> str:
     soabi = sysconfig.get_config_var("SOABI") or ""
     parts = soabi.split("-")
+
     if len(parts) >= 2:
         return f"cp{parts[1]}"
+
     return get_python_tag()
 
 
@@ -123,24 +125,54 @@ def build_wheel(toml: dict, so_files: list[Path], package: str) -> Path:
     print("Assembling wheel ...")
     DIST_DIR.mkdir(exist_ok=True)
 
-    name = toml["name"]
-    version = toml["version"]
+    project = toml["project"]
+    name = project["name"]
+    normalized_name = name.replace("-", "_")
+
+    if "version" in project:
+        version = project["version"]
+
+    elif (
+        "tool" in toml
+        and "poetry" in toml["tool"]
+        and "version" in toml["tool"]["poetry"]
+    ):
+        version = toml["tool"]["poetry"]["version"]
+
+    else:
+        version_file = Path(package) / "__version__.py"
+        version_content = version_file.read_text()
+
+        for line in version_content.split("\n"):
+            if line.startswith("__version__"):
+                version = line.split("=")[1].strip().strip('"').strip("'")
+                break
+        else:
+            raise ValueError(
+                "Could not find version in pyproject.toml or __version__.py"
+            )
+
     python_tag = get_python_tag()
     abi_tag = get_abi_tag()
     platform_tag = get_platform_tag()
-    wheel_name = f"{name}-{version}-{python_tag}-{abi_tag}-{platform_tag}.whl"
+    wheel_name = (
+        f"{normalized_name}-{version}-{python_tag}-{abi_tag}-{platform_tag}.whl"
+    )
     wheel_path = DIST_DIR / wheel_name
-    dist_info = f"{name}-{version}.dist-info"
+    dist_info = f"{normalized_name}-{version}.dist-info"
 
     metadata = "\n".join(
         [
             "Metadata-Version: 2.3",
             f"Name: {name}",
             f"Version: {version}",
-            f"Summary: {toml.get('description', '')}",
-            f"License: {toml.get('license', '')}",
-            f"Requires-Python: {toml.get('requires-python', '>=3.12')}",
-            *[f"Requires-Dist: {dep}" for dep in toml.get("dependencies", [])],
+            f"Summary: {project.get('description', '')}",
+            f"License: {project.get('license', '')}",
+            f"Requires-Python: {project.get('requires-python', '>=3.12')}",
+            *[
+                f"Requires-Dist: {dep}"
+                for dep in project.get("dependencies", [])
+            ],
         ]
     )
 
@@ -172,29 +204,27 @@ def build_wheel(toml: dict, so_files: list[Path], package: str) -> Path:
 
 
 def clean_c_files(py_files: list[Path]) -> None:
-    logger.info("Cleaning up .c files ...")
     for py_file in py_files:
         c_file = py_file.with_suffix(".c")
         if c_file.exists():
             c_file.unlink()
 
 
-def clean_so_files(py_files: list[Path]) -> None:
-    logger.info("Cleaning up .so files ...")
-    ext_suffix = sysconfig.get_config_var("EXT_SUFFIX")
-    for py_file in py_files:
-        so_file = py_file.with_suffix("").with_suffix(ext_suffix)
-        if so_file.exists():
-            so_file.unlink()
-
-
 if __name__ == "__main__":
     toml = read_toml()
-    package = toml["name"]
+    packages = (
+        toml.get("tool", {})
+        .get("hatch", {})
+        .get("build", {})
+        .get("targets", {})
+        .get("wheel", {})
+        .get("packages", [])
+    )
+    package = packages[0] if packages else toml["project"]["name"]
 
     py_files = collect_py_files(package)
     c_files = cythonize_to_c(py_files)
     so_files = compile_extensions(c_files)
+
     build_wheel(toml, so_files, package)
     clean_c_files(py_files)
-    clean_so_files(py_files)
