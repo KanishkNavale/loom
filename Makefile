@@ -21,8 +21,8 @@ prune:
 
 compile:
 	@rm -rf build dist *.egg-info
-	@uv run --no-dev python cythonize_package.py
+	@uv run --no-dev python cythonizer.py
 
 container:
-	docker buildx build -t loom:latest .
-	docker image prune -f
+	podman build -t loom:latest .
+	podman image prune -f
