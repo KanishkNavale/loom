@@ -1,6 +1,6 @@
 install:
 	uv sync
-	uv run pre-commit install -f
+	uv run pre-commit install -f --hook-type pre-commit --hook-type pre-push
 
 update: install
 	uv lock --upgrade

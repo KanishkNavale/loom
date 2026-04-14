@@ -33,10 +33,21 @@ repos:
         types: [python]
         pass_filenames: false
 
+      - id: bandit
+        name: bandit
+        entry: uv run bandit -r loom scripts
+        language: system
+        types: [python]
+        pass_filenames: false
+        args:
+          - -ll
+          - -ii
+
       - id: pytest
         name: pytest
         entry: uv run pytest
         language: system
         pass_filenames: false
         always_run: true
-        args: [--color=yes, --durations=10]
+        stages: [pre-push]
+        args: [--color=yes, --durations=10, -x]

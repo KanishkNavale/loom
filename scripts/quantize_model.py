@@ -46,7 +46,7 @@ def quantize_model(
     model, tokenizer = FastLanguageModel.from_pretrained(
         adapter_path.as_posix()
     )
-    model.save_pretained_gguf(
+    model.save_pretrained_gguf(
         output_path.as_posix(),
         tokenizer,
         quantization,
