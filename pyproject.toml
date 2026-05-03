@@ -8,28 +8,28 @@ authors = [{ name = "Kanishk Navale", email = "navalekanishk@gmail.com" }]
 
 dependencies = [
     "colorlog>=6.10.1",
-    "duckdb>=1.4.4",
+    "duckdb>=1.5.2",
     "kornia>=0.8.2",
-    "numpy>=2.4.2",
+    "numpy>=2.4.4",
     "omegaconf>=2.3.0",
-    "pydantic>=2.12.5",
+    "pydantic>=2.13.3",
     "pytorch-lightning>=2.6.1",
-    "torch>=2.10.0",
-    "unsloth>=2026.3.17",
+    "torch>=2.11.0",
+    "unsloth>=2026.4.8",
 ]
 
 [dependency-groups]
 dev = [
     "bandit>=1.9.4",
-    "black>=26.1.0",
-    "coverage>=7.13.4",
+    "black>=26.3.1",
+    "coverage>=7.13.5",
     "cython>=3.2.4",
-    "pre-commit>=4.0.0",
-    "pytest>=9.0.2",
-    "pytest-cov>=7.0.0",
-    "ruff>=0.15.1",
-    "ty>=0.0.17",
-    "wheel>=0.46.3",
+    "pre-commit>=4.6.0",
+    "pytest>=9.0.3",
+    "pytest-cov>=7.1.0",
+    "ruff>=0.15.12",
+    "ty>=0.0.34",
+    "wheel>=0.47.0",
 ]
 
 [build-system]
