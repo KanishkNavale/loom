@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import Any, Dict, Type, TypeVar
+from typing import Any, Self, TypeVar
 
 from omegaconf import DictConfig, ListConfig, OmegaConf
 from pydantic import BaseModel, ConfigDict
@@ -25,13 +25,13 @@ class BaseDataClass(BaseModel):
 
     @classmethod
     def from_dictionary(
-        cls: Type[T],
-        dictionary: Dict | DictConfig | ListConfig,
-    ) -> T:
+        cls,
+        dictionary: dict | DictConfig | ListConfig,
+    ) -> Self:
         return cls(**dictionary)  # type: ignore
 
     @classmethod
-    def from_yaml(cls: Type[T], path: str) -> T:
+    def from_yaml(cls, path: str) -> Self:
         config_path = Path(path).resolve()
 
         if not config_path.exists():
@@ -42,7 +42,7 @@ class BaseDataClass(BaseModel):
         return cls.from_dictionary(OmegaConf.load(config_path))
 
     @classmethod
-    def from_json(cls: Type[T], path: str) -> T:
+    def from_json(cls, path: str) -> Self:
         config_path = Path(path).resolve()
 
         if not config_path.exists():
@@ -55,5 +55,5 @@ class BaseDataClass(BaseModel):
     def __post_init__(self) -> None:
         pass
 
-    def model_post_init(self, __context: Any) -> None:
+    def model_post_init(self, __context: Any, /) -> None:
         return self.__post_init__()

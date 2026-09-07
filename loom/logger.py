@@ -2,7 +2,7 @@ import logging
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from threading import Lock
-from typing import Optional
+from typing import ClassVar
 
 import colorlog
 
@@ -14,27 +14,15 @@ class OneLineFormatter(logging.Formatter):
 
 
 class LoomLogger:
-    _instances: dict[str, "LoomLogger"] = {}
-    _lock = Lock()
-
-    _LOG_FORMAT = (
-        "%(name)s | %(levelname)s | %(process)s | %(asctime)s | %(message)s"
-    )
-    _DATE_FORMAT = "%d-%m-%Y | %H:%M:%S"
-    _LOG_COLORS = {
-        "DEBUG": "cyan",
-        "INFO": "green",
-        "WARNING": "yellow",
-        "ERROR": "red",
-        "CRITICAL": "red,bold",
-    }
+    _instances: ClassVar[dict[str, "LoomLogger"]] = {}
+    _lock: ClassVar[Lock] = Lock()
 
     def __init__(
         self,
         name: str,
         level: int = logging.INFO,
         log_dir: Path = Path("logs"),
-        log_file: Optional[str] = None,
+        log_file: str | None = None,
         max_file_size_mb: int = 10,
         backup_count: int = 5,
         enable_console: bool = True,
@@ -58,6 +46,26 @@ class LoomLogger:
         if not self._logger.handlers:
             self._setup_handlers()
 
+    @property
+    def log_format(self) -> str:
+        return (
+            "%(name)s | %(levelname)s | %(process)s | %(asctime)s | %(message)s"
+        )
+
+    @property
+    def date_format(self) -> str:
+        return "%d-%m-%Y | %H:%M:%S"
+
+    @property
+    def log_colors(self) -> dict[str, str]:
+        return {
+            "DEBUG": "cyan",
+            "INFO": "green",
+            "WARNING": "yellow",
+            "ERROR": "red",
+            "CRITICAL": "red,bold",
+        }
+
     def _setup_handlers(self) -> None:
         if self.enable_console:
             self._add_console_handler()
@@ -68,11 +76,11 @@ class LoomLogger:
         console_handler = logging.StreamHandler()
         console_handler.setLevel(self.level)
         console_formatter = colorlog.ColoredFormatter(
-            f"%(log_color)s{self._LOG_FORMAT}",
-            log_colors=self._LOG_COLORS,
+            f"%(log_color)s{self.log_format}",
+            log_colors=self.log_colors,
             reset=True,
             style="%",
-            datefmt=self._DATE_FORMAT,
+            datefmt=self.date_format,
         )
         console_handler.setFormatter(console_formatter)
         self._logger.addHandler(console_handler)
@@ -84,7 +92,7 @@ class LoomLogger:
             OneLineFormatter if self.one_line_file_format else logging.Formatter
         )
         file_formatter = formatter_class(
-            self._LOG_FORMAT, datefmt=self._DATE_FORMAT
+            self.log_format, datefmt=self.date_format
         )
 
         log_path = self.log_dir / self.log_file

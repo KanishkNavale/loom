@@ -1,5 +1,3 @@
-#!/usr/bin/env python
-
 import argparse
 from pathlib import Path
 
@@ -40,7 +38,7 @@ def quantize_model(
     output_path: Path,
     quantization: str,
 ) -> None:
-    if quantization not in ALLOWED_QUANTS.keys():
+    if quantization not in ALLOWED_QUANTS:
         raise ValueError("Please choose a proper quant. setting.")
 
     model, tokenizer = FastLanguageModel.from_pretrained(
