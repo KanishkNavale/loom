@@ -7,7 +7,9 @@ requires-python = ">=3.14"
 authors = [{ name = "Kanishk Navale", email = "navalekanishk@gmail.com" }]
 
 dependencies = [
+    "bcrypt>=5.0.0",
     "colorlog>=6.10.1",
+    "cryptography>=50.0.1",
     "duckdb>=1.4.4",
     "kornia>=0.8.2",
     "numpy>=2.4.2",
