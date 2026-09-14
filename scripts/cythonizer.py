@@ -3,6 +3,7 @@ import os
 import subprocess
 import sysconfig
 import tomllib
+from concurrent.futures import ProcessPoolExecutor, as_completed
 from pathlib import Path
 
 from wheel.wheelfile import WheelFile
@@ -32,9 +33,8 @@ def collect_py_files(package_dir: str) -> list[Path]:
     ]
 
 
-def cythonize_to_c(py_files: list[Path]) -> list[Path]:
-    print("Cythonizing .py -> .c ...")
-    base_args = [
+def get_cython_args() -> list[str]:
+    return [
         "cython",
         "--fast-fail",
         "-3",
@@ -56,48 +56,69 @@ def cythonize_to_c(py_files: list[Path]) -> list[Path]:
         "profile=False",
     ]
 
-    c_files = []
-    for py_file in py_files:
-        c_file = py_file.with_suffix(".c")
-        subprocess.run(
-            [*base_args, str(py_file), "-o", str(c_file)], check=True
-        )
-        c_files.append(c_file)
 
-    return c_files
-
-
-def compile_one(args: tuple[Path, Path, list[str]]) -> Path:
-    c_file, so_file, flags = args
-    subprocess.run(["gcc", *flags, str(c_file), "-o", str(so_file)], check=True)
-    return so_file
-
-
-def compile_extensions(c_files: list[Path]) -> list[Path]:
-    print("Compiling .c -> .so ...")
-    ext_suffix = sysconfig.get_config_var("EXT_SUFFIX")
+def get_gcc_flags() -> list[str]:
     include_dirs = sysconfig.get_path("include")
     compile_flags = (sysconfig.get_config_var("CFLAGS") or "").split()
-    extra_flags = [
+    return [
         "-shared",
         "-fPIC",
         "-march=native",
         "-mtune=native",
         "-ffast-math",
         "-funroll-loops",
-        "-flto",
         "-O3",
+        "-Wno-unused-function",
         f"-I{include_dirs}",
         *compile_flags,
     ]
 
+
+def build_one(args: tuple[Path, list[str], list[str], str]) -> Path:
+    py_file, cython_args, extra_flags, ext_suffix = args
+
+    c_file = py_file.with_suffix(".c")
+    subprocess.run([*cython_args, str(py_file), "-o", str(c_file)], check=True)
+
+    so_file = c_file.with_suffix("").with_suffix(ext_suffix)
+    subprocess.run(
+        ["gcc", *extra_flags, str(c_file), "-o", str(so_file)], check=True
+    )
+
+    return so_file
+
+
+def build_extensions(py_files: list[Path]) -> list[Path]:
+    print("Building extensions (cythonize + compile) ...")
+    ext_suffix = sysconfig.get_config_var("EXT_SUFFIX")
+    cython_args = get_cython_args()
+    extra_flags = get_gcc_flags()
+
     tasks = [
-        (c_file, c_file.with_suffix("").with_suffix(ext_suffix), extra_flags)
-        for c_file in c_files
+        (
+            py_file,
+            cython_args,
+            extra_flags,
+            ext_suffix,
+        )
+        for py_file in py_files
     ]
 
-    with multiprocessing.Pool(CPU_COUNT) as pool:
-        return pool.map(compile_one, tasks)
+    results = []
+    with ProcessPoolExecutor(max_workers=CPU_COUNT) as pool:
+        futures = {pool.submit(build_one, task): task for task in tasks}
+
+        try:
+            for future in as_completed(futures):
+                results.append(future.result())
+
+        except subprocess.CalledProcessError:
+            for f in futures:
+                f.cancel()
+
+            raise
+
+    return results
 
 
 def get_python_tag() -> str:
@@ -108,10 +129,8 @@ def get_python_tag() -> str:
 def get_abi_tag() -> str:
     soabi = sysconfig.get_config_var("SOABI") or ""
     parts = soabi.split("-")
-
     if len(parts) >= 2:
         return f"cp{parts[1]}"
-
     return get_python_tag()
 
 
@@ -145,6 +164,7 @@ def build_wheel(toml: dict, so_files: list[Path], package: str) -> Path:
             if line.startswith("__version__"):
                 version = line.split("=")[1].strip().strip('"').strip("'")
                 break
+
         else:
             raise ValueError(
                 "Could not find version in pyproject.toml or __version__.py"
@@ -221,8 +241,6 @@ if __name__ == "__main__":
     package = packages[0] if packages else toml["project"]["name"]
 
     py_files = collect_py_files(package)
-    c_files = cythonize_to_c(py_files)
-    so_files = compile_extensions(c_files)
-
+    so_files = build_extensions(py_files)
     build_wheel(toml, so_files, package)
     clean_c_files(py_files)
