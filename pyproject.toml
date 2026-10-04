@@ -9,28 +9,28 @@ authors = [{ name = "Kanishk Navale", email = "navalekanishk@gmail.com" }]
 dependencies = [
     "bcrypt>=5.0.0",
     "colorlog>=6.10.1",
-    "cryptography>=50.0.1",
-    "duckdb>=1.4.4",
+    "cryptography>=50.0.2",
+    "duckdb>=1.5.6",
     "kornia>=0.8.2",
     "numpy>=2.4.2",
     "omegaconf>=2.3.0",
     "pydantic>=2.12.5",
     "pytorch-lightning>=2.6.1",
     "torch>=2.10.0",
-    "unsloth>=2026.9.11",
+    "unsloth>=2026.9.12",
 ]
 
 [dependency-groups]
 dev = [
     "bandit>=1.9.4",
     "black>=26.1.0",
-    "coverage>=7.13.4",
+    "coverage>=7.16.2",
     "cython>=3.2.4",
     "pre-commit>=4.0.0",
     "pytest>=9.0.2",
     "pytest-cov>=7.0.0",
-    "ruff>=0.16.8",
-    "ty>=0.0.83",
+    "ruff>=0.16.9",
+    "ty>=0.0.84",
     "wheel>=0.46.3",
 ]
 
