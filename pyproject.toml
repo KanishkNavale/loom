@@ -14,23 +14,23 @@ dependencies = [
     "kornia>=0.8.2",
     "numpy>=2.4.2",
     "omegaconf>=2.3.0",
-    "pydantic>=2.12.5",
+    "pydantic>=2.14.2",
     "pytorch-lightning>=2.6.1",
     "torch>=2.10.0",
-    "unsloth>=2026.10.10",
+    "unsloth>=2026.11.2",
 ]
 
 [dependency-groups]
 dev = [
     "bandit>=1.9.4",
     "black>=26.1.0",
-    "coverage>=7.13.4",
-    "cython>=3.2.4",
+    "coverage>=7.17.2",
+    "cython>=3.3.1",
     "pre-commit>=4.0.0",
     "pytest>=9.2.0",
     "pytest-cov>=7.0.0",
     "ruff>=0.17.3",
-    "ty>=0.0.94",
+    "ty>=0.0.97",
     "wheel>=0.46.3",
 ]
 
